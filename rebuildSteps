@@ -1,0 +1,17 @@
+Step 1: Rebuild the Docker Image
+Rebuild the Docker image with your updated code:
+docker build -t gcr.io/qrollin/qr-attendance-app .
+
+
+Step 2: Push the Updated Image to Google Container Registry
+Push the new image to Google Container Registry:
+docker push gcr.io/qrollin/qr-attendance-app
+
+
+Step 3: Redeploy the App to Google Cloud Run
+Redeploy your app using the updated image:
+gcloud run deploy qr-attendance-app --image gcr.io/qrollin/qr-attendance-app --platform managed --region us-central1 --allow-unauthenticated
+
+
+Step 4: Test the Deployment
+GO TO URL 
