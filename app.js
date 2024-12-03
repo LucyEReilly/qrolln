@@ -22,9 +22,9 @@ const pubsub = new PubSub({
 });
 const subscriptionName = 'attendance-confirmation-sub';
 const subscription = pubsub.subscription(subscriptionName);
-const confirmations = []; // Array to store confirmation messages
+//const confirmations = []; // Array to store confirmation messages
 
-subscription.on('message', (message) => {
+/*subscription.on('message', (message) => {
     try {
         const messageData = JSON.parse(Buffer.from(message.data, 'base64').toString('utf8'));
         console.log(`Attendance confirmation received for ${messageData.name}`);
@@ -42,7 +42,7 @@ subscription.on('message', (message) => {
         console.error('Error processing notification:', error);
         message.nack(); // Retry message if there's an error
     }
-});
+});*/
 
 
 // Route for Teachers to Generate QR Code
@@ -147,17 +147,16 @@ app.post('/submit_attendance', async (req, res) => {
             timestamp: new Date(),
         });
 
-        // Create the Pub/Sub message
         const messageData = {
             name,
             peopleSoftNumber,
             classID,
             weekNumber,
             timestamp: new Date().toISOString(),
+            message: `Attendance for ${name} in Week ${weekNumber} of Class ${classID} has been confirmed.`
         };
+        // Create and publish the Pub/Sub message
         const dataBuffer = Buffer.from(JSON.stringify(messageData));
-
-        // Publish to the topic
         const topicName = 'attendance-confirmation';
         await pubsub.topic(topicName).publishMessage({ data: dataBuffer });
 
@@ -173,6 +172,8 @@ app.post('/submit_attendance', async (req, res) => {
             <body>
                 <h1>Thank you, ${name}!</h1>
                 <p>Your attendance for Week ${weekNumber} in Class ${classID} has been recorded.</p>
+                <h2>Confirmation Message:</h2>
+                <p>${messageData.message}</p>
             </body>
             </html>
         `);
@@ -180,10 +181,6 @@ app.post('/submit_attendance', async (req, res) => {
         console.error('Error saving attendance:', error);
         res.status(500).send('Failed to record attendance.');
     }
-});
-
-app.get('/confirmations', (req, res) => {
-    res.json(confirmations);
 });
 
 // Start the server
