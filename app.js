@@ -16,7 +16,10 @@ app.use(express.urlencoded({ extended: true })); // For form submissions
 app.use(express.json()); // For JSON requests
 
 // Initialize Pub/Sub 
-const pubsub = new PubSub();
+const pubsub = new PubSub({
+    projectId: 'qrollin',
+    keyFilename: './serviceAccountKey.json',
+});
 const subscriptionName = 'attendance-confirmation-sub';
 const subscription = pubsub.subscription(subscriptionName);
 
