@@ -1,7 +1,8 @@
 const express = require('express');
-const bodyParser = require('body-parser');
+//const bodyParser = require('body-parser');
 const qr = require('qr-image');
 const admin = require('firebase-admin');
+const { PubSub } = require('@google-cloud/pubsub');
 
 // Initialize Firestore
 const serviceAccount = require('./serviceAccountKey.json');
@@ -11,8 +12,28 @@ admin.initializeApp({
 const db = admin.firestore();
 
 const app = express();
-app.use(bodyParser.urlencoded({ extended: true })); // For form submissions
-app.use(bodyParser.json()); // For JSON requests
+app.use(express.urlencoded({ extended: true })); // For form submissions
+app.use(express.json()); // For JSON requests
+
+// Initialize Pub/Sub 
+const pubsub = new PubSub();
+const subscriptionName = 'attendance-confirmation-sub';
+const subscription = pubsub.subscription(subscriptionName);
+
+subscription.on('message', (message) => {
+    try {
+        console.log('Received message:', message.data.toString());
+        const data = JSON.parse(message.data);
+
+        console.log(`Processing attendance confirmation for ${data.name}`);
+        // TODO email notification
+
+        message.ack(); // Acknowledge the message
+    } catch (error) {
+        console.error('Error processing message:', error);
+    }
+});
+
 
 // Route for Teachers to Generate QR Code
 app.get('/generate_teacher_qr', (req, res) => {
@@ -115,6 +136,20 @@ app.post('/submit_attendance', async (req, res) => {
             peopleSoftNumber,
             timestamp: new Date(),
         });
+
+        // Create the Pub/Sub message
+        const messageData = {
+            name,
+            peopleSoftNumber,
+            classID,
+            weekNumber,
+            timestamp: new Date().toISOString(),
+        };
+        const dataBuffer = Buffer.from(JSON.stringify(messageData));
+
+        // Publish to the topic
+        const topicName = 'attendance-confirmation';
+        await pubsub.topic(topicName).publishMessage({ data: dataBuffer });
 
         res.send(`
             <html>
