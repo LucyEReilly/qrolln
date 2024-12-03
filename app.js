@@ -22,18 +22,25 @@ const pubsub = new PubSub({
 });
 const subscriptionName = 'attendance-confirmation-sub';
 const subscription = pubsub.subscription(subscriptionName);
+const confirmations = []; // Array to store confirmation messages
 
 subscription.on('message', (message) => {
     try {
-        console.log('Received message:', message.data.toString());
-        const data = JSON.parse(message.data);
+        const messageData = JSON.parse(Buffer.from(message.data, 'base64').toString('utf8'));
+        console.log(`Attendance confirmation received for ${messageData.name}`);
 
-        console.log(`Processing attendance confirmation for ${data.name}`);
-        // TODO email notification
+        // Add the confirmation message to the array
+        confirmations.push({
+            name: messageData.name,
+            classID: messageData.classID,
+            weekNumber: messageData.weekNumber,
+            timestamp: messageData.timestamp,
+        });
 
         message.ack(); // Acknowledge the message
     } catch (error) {
-        console.error('Error processing message:', error);
+        console.error('Error processing notification:', error);
+        message.nack(); // Retry message if there's an error
     }
 });
 
@@ -173,6 +180,10 @@ app.post('/submit_attendance', async (req, res) => {
         console.error('Error saving attendance:', error);
         res.status(500).send('Failed to record attendance.');
     }
+});
+
+app.get('/confirmations', (req, res) => {
+    res.json(confirmations);
 });
 
 // Start the server
