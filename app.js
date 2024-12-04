@@ -3,6 +3,7 @@ const express = require('express');
 const qr = require('qr-image');
 const admin = require('firebase-admin');
 const { PubSub } = require('@google-cloud/pubsub');
+const nodemailer = require('nodemailer');
 
 // Initialize Firestore
 const serviceAccount = require('./serviceAccountKey.json');
@@ -20,30 +21,15 @@ const pubsub = new PubSub({
     projectId: 'qrollin',
     keyFilename: './serviceAccountKey.json',
 });
-const subscriptionName = 'attendance-confirmation-sub';
-const subscription = pubsub.subscription(subscriptionName);
-//const confirmations = []; // Array to store confirmation messages
 
-/*subscription.on('message', (message) => {
-    try {
-        const messageData = JSON.parse(Buffer.from(message.data, 'base64').toString('utf8'));
-        console.log(`Attendance confirmation received for ${messageData.name}`);
-
-        // Add the confirmation message to the array
-        confirmations.push({
-            name: messageData.name,
-            classID: messageData.classID,
-            weekNumber: messageData.weekNumber,
-            timestamp: messageData.timestamp,
-        });
-
-        message.ack(); // Acknowledge the message
-    } catch (error) {
-        console.error('Error processing notification:', error);
-        message.nack(); // Retry message if there's an error
+// Configure email notification
+const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: 'your-email@gmail.com',
+        pass: 'your-email-password'
     }
-});*/
-
+});
 
 // Route for Teachers to Generate QR Code
 app.get('/generate_teacher_qr', (req, res) => {
@@ -155,6 +141,7 @@ app.post('/submit_attendance', async (req, res) => {
             timestamp: new Date().toISOString(),
             message: `Attendance for ${name} in Week ${weekNumber} of Class ${classID} has been confirmed.`
         };
+
         // Create and publish the Pub/Sub message
         const dataBuffer = Buffer.from(JSON.stringify(messageData));
         const topicName = 'attendance-confirmation';
