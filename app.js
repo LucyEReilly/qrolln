@@ -1,9 +1,9 @@
 const express = require('express');
-//const bodyParser = require('body-parser');
 const qr = require('qr-image');
 const admin = require('firebase-admin');
 const { PubSub } = require('@google-cloud/pubsub');
-const nodemailer = require('nodemailer');
+const sendEmailFile = require('./sendEmailFunction');
+exports.sendEmail = sendEmailFile.sendEmail;
 
 // Initialize Firestore
 const serviceAccount = require('./serviceAccountKey.json');
@@ -17,19 +17,11 @@ app.use(express.urlencoded({ extended: true })); // For form submissions
 app.use(express.json()); // For JSON requests
 
 // Initialize Pub/Sub 
-const pubsub = new PubSub({
+const pubSubClient = new PubSub({
     projectId: 'qrollin',
     keyFilename: './serviceAccountKey.json',
 });
-
-// Configure email notification
-const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-        user: 'your-email@gmail.com',
-        pass: 'your-email-password'
-    }
-});
+const topicName = 'attendance-confirmation';
 
 // Route for Teachers to Generate QR Code
 app.get('/generate_teacher_qr', (req, res) => {
@@ -102,6 +94,8 @@ app.get('/attendance', (req, res) => {
                 <input type="text" id="name" name="name" required>
                 <label for="peopleSoftNumber">PeopleSoft Number:</label>
                 <input type="text" id="peopleSoftNumber" name="peopleSoftNumber" required>
+                <label for="email">Email:</label>
+                <input type="text" id="email" name="email" required>
                 <button type="submit">Submit Attendance</button>
             </form>
         </body>
@@ -112,9 +106,9 @@ app.get('/attendance', (req, res) => {
 
 // Submit Attendance to Firestore
 app.post('/submit_attendance', async (req, res) => {
-    const { name, peopleSoftNumber, classID, weekNumber } = req.body;
+    const { name, peopleSoftNumber, email, classID, weekNumber } = req.body;
 
-    if (!name || !peopleSoftNumber || !classID || !weekNumber) {
+    if (!name || !peopleSoftNumber || !email || !classID || !weekNumber) {
         return res.status(400).send('All fields are required.');
     }
 
@@ -130,12 +124,14 @@ app.post('/submit_attendance', async (req, res) => {
         await docRef.set({
             name,
             peopleSoftNumber,
+            email,
             timestamp: new Date(),
         });
 
         const messageData = {
             name,
             peopleSoftNumber,
+            email,
             classID,
             weekNumber,
             timestamp: new Date().toISOString(),
@@ -144,8 +140,7 @@ app.post('/submit_attendance', async (req, res) => {
 
         // Create and publish the Pub/Sub message
         const dataBuffer = Buffer.from(JSON.stringify(messageData));
-        const topicName = 'attendance-confirmation';
-        await pubsub.topic(topicName).publishMessage({ data: dataBuffer });
+        await pubSubClient.topic(topicName).publishMessage({ data: dataBuffer });
 
         res.send(`
             <html>
@@ -159,8 +154,6 @@ app.post('/submit_attendance', async (req, res) => {
             <body>
                 <h1>Thank you, ${name}!</h1>
                 <p>Your attendance for Week ${weekNumber} in Class ${classID} has been recorded.</p>
-                <h2>Confirmation Message:</h2>
-                <p>${messageData.message}</p>
             </body>
             </html>
         `);
