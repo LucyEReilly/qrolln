@@ -1,11 +1,8 @@
-'use strict';
-
 const express = require('express');
 const qr = require('qr-image');
 const admin = require('firebase-admin');
 const { PubSub } = require('@google-cloud/pubsub');
-const { sendEmail } = require('./sendEmailFunction');
-exports.sendEmail = sendEmail;
+const { listenForMessages } = require('./sendEmailFunction');
 
 // Initialize Firestore
 const serviceAccount = require('./serviceAccountKey.json');
@@ -36,6 +33,9 @@ const convertToSchema = (data) => {
         timestamp: data.timestamp || new Date().toISOString(),
         message: `Attendance for ${data.name} in Week ${data.weekNumber} of Class ${data.classID} has been confirmed.`    };
 }
+
+// Start listening for messages
+listenForMessages();
 
 // Route for Teachers to Generate QR Code
 app.get('/generate_teacher_qr', (req, res) => {
