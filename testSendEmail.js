@@ -1,22 +1,23 @@
-const { sendEmail } = require('./sendEmailFunction'); // Import the sendEmail function
+const { sendEmail } = require('./app');
 
 // Prepare mock data
 const mockData = {
-    name: 'Jane Doe',
-    email: 'jsl79@pitt.edu',
-    classID: 'CS101',
-    weekNumber: '5',
-    timestamp: new Date().toISOString(),
-    message: 'Attendance for John Doe in Week 5 of Class CS101 has been confirmed.'
+    data: 'eyJuYW1lIjoiU2FsIiwiZW1haWwiOiJqc2w3OUBwaXR0LmVkdSIsImNsYXNzSUQiOiJDUzEwMSIsIndlZWtOdW1iZXIiOjUwMDAsInBlb3BsZVNvZnROdW1iZXIiOjY5OTcsInRpbWVzdGFtcCI6IjIwMjQtMTItMDZUMDU6MzY6NDcuNDk4WiIsIm1lc3NhZ2UiOiJBdHRlbmRhbmNlIGZvciBKb2UgaW4gV2VlayA1MDAwIG9mIENsYXNzIENTMTAxIGhhcyBiZWVuIGNvbmZpcm1lZC4ifQ==',
+    messageId: '12826308663134011',
+    attributes: {
+        classID: 'soc0002',
+        weekNumber: '1'
+    }
 };
 
-// Base64-encode the mock data
-const base64Data = Buffer.from(JSON.stringify(mockData)).toString('base64');
-
-// Simulate the Pub/Sub message
-const testMessage = {
-    data: base64Data
+// Simulate the CloudEvent object
+const cloudEvent = {
+    data: {
+        message: mockData
+    }
 };
 
-// Call the sendEmail function with the test message
-sendEmail(testMessage, null);
+// Call the sendEmail function with the mock CloudEvent
+sendEmail(cloudEvent)
+    .then(() => console.log('Test completed successfully'))
+    .catch((error) => console.error('Test failed', error));
