@@ -1,4 +1,6 @@
+// Correct export of the sendEmail function
 const nodemailer = require('nodemailer');
+//const functions = require('@google-cloud/functions-framework');
 
 // Configure email notification
 const transporter = nodemailer.createTransport({
@@ -9,27 +11,44 @@ const transporter = nodemailer.createTransport({
     }
 });
 
-const sendEmail = async (req, res) => {
-    const data = JSON.parse(Buffer.from(req.data, 'base64').toString());
+exports.sendEmail = async (event, context) => {
+    console.log('Event:', event);
 
-    if (!req.data) {
-        console.error('No data in message:', req);
-        return;
-    }
+    // Check for the presence of the data field 
+    if (!event.data) { 
+        console.error('No data in event:', event); 
+        return; 
+    } 
+    
+    // Extract and decode the Pub/Sub message 
+    const base64Data = event.data.message 
+        ? event.data.message.data : event.data; 
+    
+    const pubsubMessage = base64Data 
+        ? JSON.parse(Buffer.from(base64Data, 'base64').toString()) : {};
 
     const mailOptions = {
         from: 'attendance973@gmail.com',
-        to: data.email,
+        to: pubsubMessage.email,
         subject: 'Attendance Confirmation',
-        text: `Dear ${data.name},\n\nYour attendance for Week ${data.weekNumber} in Class ${data.classID} has been recorded.\n\nBest regards,\nAttendance System`
+        text: `Dear ${pubsubMessage.name},\n\nYour attendance for Week ${pubsubMessage.weekNumber} in Class ${pubsubMessage.classID} has been recorded.\n\nBest regards,\nAttendance System`
     };
+
+    if (!pubsubMessage.email || !pubsubMessage.name) { 
+        console.error('Invalid message:', pubsubMessage); 
+        return; 
+    }
 
     try {
         await transporter.sendMail(mailOptions);
-        console.log('Email sent to:', data.email);
+        console.log('Email sent to:', pubsubMessage.email);
     } catch (error) {
         console.error('Error sending email:', error);
     }
 };
 
-module.exports = { sendEmail };
+
+// Register the function to handle Cloud Events
+//functions.cloudEvent('sendEmail', sendEmail);
+
+//module.exports = { sendEmail };
