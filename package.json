@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "main": "app.js",
   "scripts": {
-    "start": "functions-framework --target=sendEmail --signature-type=event --port=8081",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
