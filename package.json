@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "app.js",
   "scripts": {
-    "start": "functions-framework --source=./sendEmailFunction.js --target=sendEmail",
+    "start": "functions-framework --target=sendEmail --signature-type=event --port=8081",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -13,10 +13,10 @@
   "dependencies": {
     "@google-cloud/functions-framework": "^3.4.2",
     "@google-cloud/pubsub": "^4.9.0",
-    "body-parser": "^1.20.3",
     "express": "^4.21.1",
     "firebase-admin": "^13.0.1",
     "nodemailer": "^6.9.16",
-    "qr-image": "^3.2.0"
+    "qr-image": "^3.2.0",
+    "webidl-conversions": "^7.0.0"
   }
 }
