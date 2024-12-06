@@ -1,9 +1,11 @@
+'use strict';
+
 const express = require('express');
 const qr = require('qr-image');
 const admin = require('firebase-admin');
 const { PubSub } = require('@google-cloud/pubsub');
-const sendEmailFile = require('./sendEmailFunction');
-exports.sendEmail = sendEmailFile.sendEmail;
+const { sendEmail } = require('./sendEmailFunction');
+exports.sendEmail = sendEmail;
 
 // Initialize Firestore
 const serviceAccount = require('./serviceAccountKey.json');
@@ -22,6 +24,18 @@ const pubSubClient = new PubSub({
     keyFilename: './serviceAccountKey.json',
 });
 const topicName = 'attendance-confirmation';
+
+// Function to convert fields according to schema
+const convertToSchema = (data) => {
+    return { 
+        name: data.name,
+        peopleSoftNumber: parseInt(data.peopleSoftNumber, 10),
+        email: data.email,
+        classID: data.classID,
+        weekNumber: parseInt(data.weekNumber, 10),
+        timestamp: data.timestamp || new Date().toISOString(),
+        message: `Attendance for ${data.name} in Week ${data.weekNumber} of Class ${data.classID} has been confirmed.`    };
+}
 
 // Route for Teachers to Generate QR Code
 app.get('/generate_teacher_qr', (req, res) => {
@@ -108,38 +122,33 @@ app.get('/attendance', (req, res) => {
 app.post('/submit_attendance', async (req, res) => {
     const { name, peopleSoftNumber, email, classID, weekNumber } = req.body;
 
+    console.log(req.body); // Log the entire request body
+
     if (!name || !peopleSoftNumber || !email || !classID || !weekNumber) {
         return res.status(400).send('All fields are required.');
     }
 
     try {
+        // Convert the fields according to the Avro schema 
+        const schemaData = convertToSchema(req.body);
+
         // Reference the nested structure: attendance -> classID -> weekNumber -> studentID
         const docRef = db
             .collection('attendance')
-            .doc(classID)
+            .doc(classID.toLowerCase())
             .collection(`week_${weekNumber}`)
             .doc(name);
 
         // Add or update the student's attendance record
         await docRef.set({
-            name,
-            peopleSoftNumber,
-            email,
+            name: schemaData.name,
+            peopleSoftNumber: schemaData.peopleSoftNumber,
+            email: schemaData.email,
             timestamp: new Date(),
         });
 
-        const messageData = {
-            name,
-            peopleSoftNumber,
-            email,
-            classID,
-            weekNumber,
-            timestamp: new Date().toISOString(),
-            message: `Attendance for ${name} in Week ${weekNumber} of Class ${classID} has been confirmed.`
-        };
-
         // Create and publish the Pub/Sub message
-        const dataBuffer = Buffer.from(JSON.stringify(messageData));
+        const dataBuffer = Buffer.from(JSON.stringify(schemaData));
         await pubSubClient.topic(topicName).publishMessage({ data: dataBuffer });
 
         res.send(`
@@ -153,7 +162,7 @@ app.post('/submit_attendance', async (req, res) => {
             </head>
             <body>
                 <h1>Thank you, ${name}!</h1>
-                <p>Your attendance for Week ${weekNumber} in Class ${classID} has been recorded.</p>
+                <p>Your attendance for Week ${weekNumber} in Class ${classID.toLowerCase()} has been recorded.</p>
             </body>
             </html>
         `);
