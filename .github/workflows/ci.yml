@@ -2,7 +2,6 @@ on:
   push:
     branches:
       - main
-      - login-gcr.io # @note: use any development branch you would like
 
 jobs:
   build-and-push-to-gcr:
@@ -10,17 +9,18 @@ jobs:
     permissions:
       contents: 'read'
       id-token: 'write'
+
     steps:
-      # checkout code
+      # Checkout code
       - uses: actions/checkout@v4
 
+      # Debug Metadata (Optional)
       - name: Debug Metadata
         run: |
           echo "Repository: ${{ github.repository }}"
           echo "Branch/Ref: ${{ github.ref }}"
 
-
-      # authenticate with GCP with workload identity provider
+      # Authenticate to GCP with workload identity provider
       - uses: 'google-github-actions/auth@v2'
         id: auth
         name: Authenticate to GCP
@@ -28,20 +28,21 @@ jobs:
           project_id: 'qrollin'
           workload_identity_provider: 'projects/111994251683/locations/global/workloadIdentityPools/github/providers/my-repo'
 
-      # configure/login with docker
+      # Configure Docker Authentication
       - name: gcloud Configure Docker
         run: gcloud auth configure-docker us-central1-docker.pkg.dev
 
-      # setup docker buildx
+      # Setup Docker Buildx
       - name: Setup docker buildx
         uses: docker/setup-buildx-action@v3
         with:
           platforms: linux/amd64,linux/arm64
 
+      # Build and Push Docker Image
       - name: Build and Push
         uses: docker/build-push-action@v6
         with:
           context: ./
           file: ./Dockerfile
           push: true
-          tags: us-central1-docker.pkg.dev/qrollin/qrolln-deploy/your-image-name:latest
+          tags: us-central1-docker.pkg.dev/qrollin/qrolln-deploy/my-image:latest
