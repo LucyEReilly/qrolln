@@ -44,4 +44,4 @@ jobs:
           context: ./
           file: ./Dockerfile
           push: true
-          tags: us-central1-docker.pkg.dev/qrollin/QRollIn/your-image-name:latest
+          tags: us-central1-docker.pkg.dev/qrollin/qrollin/your-image-name:latest
