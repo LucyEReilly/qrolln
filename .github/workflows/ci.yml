@@ -44,4 +44,4 @@ jobs:
           context: ./
           file: ./Dockerfile
           push: true
-          tags: us-central1-docker.pkg.dev/cs1660-cloudcomputing-435323/cloud-iam-permissions-assignment/node-demo:test
+          tags: us-central1-docker.pkg.dev/YOUR_PROJECT_ID/qrollin/app:latest
