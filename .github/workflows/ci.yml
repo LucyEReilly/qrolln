@@ -1,58 +1,41 @@
-name: Build and Deploy QR Code Generator
-
-# Trigger this workflow on pushes to the main branch
 on:
   push:
     branches:
       - main
+      - login-gcr.io # @note: use any development branch you would like
 
 jobs:
-  build-and-deploy:
-    runs-on: ubuntu-latest
-
+  build-and-push-to-gcr:
+    runs-on: ubuntu-22.04
     permissions:
-      id-token: write
-      contents: read
-
+      contents: 'read'
+      id-token: 'write'
     steps:
-    # Step 1: Checkout source code
-    - name: Checkout source code
-      uses: actions/checkout@v3
-      
-    - name: Debug OIDC Token
-      run: |
-        echo "Fetching OIDC token..."
-        curl -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
-             "$ACTIONS_ID_TOKEN_REQUEST_URL"
+      # checkout code
+      - uses: actions/checkout@v4
 
-    # Step 2: Authenticate to Google Cloud
-    - name: Authenticate to Google Cloud
-      uses: google-github-actions/auth@v2
-      with:
-        project_id: 'qrollin'
-        workload_identity_provider: 'projects/111994251683/locations/global/workloadIdentityPools/github/providers/my-repo' 
-        service_account: '111994251683-compute@developer.gserviceaccount.com' 
+      # authenticate with GCP with workload identity provider
+      - uses: 'google-github-actions/auth@v2'
+        id: auth
+        name: Authenticate to GCP
+        with:
+          project_id: 'qrollin'
+          workload_identity_provider: 'projects/111994251683/locations/global/workloadIdentityPools/github/providers/my-repo'
 
-    # Step 3: Configure Docker to authenticate with Google Artifact Registry
-    - name: Set up Docker
-      run: gcloud auth configure-docker
+      # configure/login with docker
+      - name: gcloud Configure Docker
+        run: gcloud auth configure-docker us-central1-docker.pkg.dev
 
-    # Step 4: Build the Docker image
-    - name: Build Docker image
-      run: docker build -t us-central1-docker.pkg.dev/qrollin/qrolln-deploy/qr-code-generator:${{ github.sha }} .
+      # setup docker buildx
+      - name: Setup docker buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          platforms: linux/amd64,linux/arm64
 
-    # Step 5: Push the Docker image to Google Artifact Registry
-    - name: Push Docker image to Artifact Registry
-      run: docker push us-central1-docker.pkg.dev/qrollin/qrolln-deploy/qr-code-generator:${{ github.sha }}
-
-    # Step 6: Deploy the application to Cloud Run
-    - name: Deploy to Cloud Run
-      run: |
-        gcloud run deploy qr-code-generator \
-          --image us-central1-docker.pkg.dev/qrollin/qrolln-deploy/qr-code-generator:${{ github.sha }} \
-          --region=us-central1 \
-          --platform=managed \
-          --allow-unauthenticated
-
-
-
+      - name: Build and Push
+        uses: docker/build-push-action@v6
+        with:
+          context: ./
+          file: ./Dockerfile
+          push: true
+          tags: us-central1-docker.pkg.dev/cs1660-cloudcomputing-435323/cloud-iam-permissions-assignment/node-demo:test
