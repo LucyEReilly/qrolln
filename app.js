@@ -42,10 +42,38 @@ app.get('/generate_teacher_qr', (req, res) => {
     const html = `
         <html>
         <head>
-            <title>Generate QR Code</title>
+            <title>Generate QR Code for Attendance</title>
+            <style>
+                body { font-family: Arial, sans-serif; margin: 20px; background-color: #F5F5F5; color: #003594; }
+                h1 { text-align: center; color: #003594; }
+                form { 
+                    max-width: 400px; 
+                    margin: auto; 
+                    padding: 20px; 
+                    border: 1px solid #003594; 
+                    border-radius: 10px; 
+                    background-color: #FFFFFF;
+                }
+                label { font-weight: bold; }
+                input, button { 
+                    display: block; 
+                    width: 100%; 
+                    margin-bottom: 10px; 
+                    padding: 10px; 
+                    border: 1px solid #CCC; 
+                    border-radius: 5px; 
+                }
+                button { 
+                    background-color: #003594; 
+                    color: white; 
+                    border: none; 
+                    cursor: pointer; 
+                }
+                button:hover { background-color: #FFB81C; color: #003594; }
+            </style>
         </head>
         <body>
-            <h1>Generate QR Code</h1>
+            <h1>Generate QR Code for Attendance</h1>
             <form method="POST" action="/generate_qr">
                 <label for="classID">Class ID:</label>
                 <input type="text" id="classID" name="classID" required>
@@ -71,10 +99,51 @@ app.post('/generate_qr', (req, res) => {
         // Replace the local URL with the Cloud Run URL
         const cloudRunURL = 'https://qr-attendance-app-111994251683.us-central1.run.app';
         const qrData = `${cloudRunURL}/attendance?classID=${classID}&weekNumber=${weekNumber}`;
-        const qrCode = qr.image(qrData, { type: 'png' });
+       // const qrCode = qr.image(qrData, { type: 'png' });
 
-        res.setHeader('Content-Type', 'image/png');
-        qrCode.pipe(res);
+        const qrCode = qr.imageSync(qrData, { type: 'png' }); // Generate QR code as a buffer
+        const html = `
+            <html>
+            <head>
+                <title>Generated QR Code</title>
+                <style>
+                    body { font-family: Arial, sans-serif; margin: 20px; background-color: #F5F5F5; color: #003594; }
+                    h1 { text-align: center; color: #003594; }
+                    .qr-container {
+                        display: flex;
+                        flex-direction: column;
+                        align-items: center;
+                        margin-top: 30px;
+                    }
+                    img { border: 2px solid #FFB81C; padding: 10px; border-radius: 10px; }
+                    button {
+                        margin-top: 20px;
+                        padding: 10px 20px;
+                        background-color: #003594;
+                        color: white;
+                        border: none;
+                        border-radius: 5px;
+                        cursor: pointer;
+                    }
+                    button:hover { background-color: #FFB81C; color: #003594; }
+                </style>
+            </head>
+            <body>
+                <h1>QR Code for Attendance</h1>
+                <div class="qr-container">
+                    <p>Class ID: ${classID}</p>
+                    <p>Week Number: ${weekNumber}</p>
+                    <img src="data:image/png;base64,${qrCode.toString('base64')}" alt="QR Code">
+                    <button onclick="window.history.back()">Generate Another QR Code</button>
+                </div>
+            </body>
+            </html>
+        `;
+
+        res.send(html);
+
+      //  res.setHeader('Content-Type', 'image/png');
+       // qrCode.pipe(res); CHECK
     } catch (error) {
         res.status(500).json({ error: 'Failed to generate QR code' });
     }
@@ -91,16 +160,38 @@ app.get('/attendance', (req, res) => {
     const html = `
         <html>
         <head>
-            <title>Attendance</title>
+            <title>Attendance for ${classID} - Week ${weekNumber}</title>
             <style>
-                body { font-family: Arial, sans-serif; margin: 20px; }
-                form { max-width: 400px; margin: auto; padding: 20px; border: 1px solid #ccc; border-radius: 10px; }
-                label, input { display: block; margin-bottom: 10px; }
-                button { padding: 10px 20px; background-color: #28a745; color: white; border: none; border-radius: 5px; }
+                body { font-family: Arial, sans-serif; margin: 20px; background-color: #F5F5F5; color: #003594; }
+                h1 { text-align: center; color: #003594; }
+                form { 
+                    max-width: 400px; 
+                    margin: auto; 
+                    padding: 20px; 
+                    border: 1px solid #003594; 
+                    border-radius: 10px; 
+                    background-color: #FFFFFF;
+                }
+                label { font-weight: bold; }
+                input, button { 
+                    display: block; 
+                    width: 100%; 
+                    margin-bottom: 10px; 
+                    padding: 10px; 
+                    border: 1px solid #CCC; 
+                    border-radius: 5px; 
+                }
+                button { 
+                    background-color: #003594; 
+                    color: white; 
+                    border: none; 
+                    cursor: pointer; 
+                }
+                button:hover { background-color: #FFB81C; color: #003594; }
             </style>
         </head>
         <body>
-            <h1>Class Attendance</h1>
+            <h1>Attendance for Class ${classID} - Week ${weekNumber}</h1>
             <form method="POST" action="/submit_attendance">
                 <input type="hidden" name="classID" value="${classID}">
                 <input type="hidden" name="weekNumber" value="${weekNumber}">
@@ -109,7 +200,7 @@ app.get('/attendance', (req, res) => {
                 <label for="peopleSoftNumber">PeopleSoft Number:</label>
                 <input type="text" id="peopleSoftNumber" name="peopleSoftNumber" required>
                 <label for="email">Email:</label>
-                <input type="text" id="email" name="email" required>
+                <input type="email" id="email" name="email" required>
                 <button type="submit">Submit Attendance</button>
             </form>
         </body>
@@ -152,7 +243,7 @@ app.post('/submit_attendance', async (req, res) => {
         await pubSubClient.topic(topicName).publishMessage({ data: dataBuffer });
 
         res.send(`
-            <html>
+           <html>
             <head>
                 <title>Attendance Confirmed</title>
                 <style>
@@ -161,8 +252,15 @@ app.post('/submit_attendance', async (req, res) => {
                 </style>
             </head>
             <body>
-                <h1>Thank you, ${name}!</h1>
-                <p>Your attendance for Week ${weekNumber} in Class ${classID.toLowerCase()} has been recorded.</p>
+                <h1>Thank You, ${name}!</h1>
+                <p>Your attendance for <b>Class ${classID}</b> - Week ${weekNumber} has been successfully recorded.</p>
+                <div class="details">
+                    <p><b>Name:</b> ${name}</p>
+                    <p><b>PeopleSoft Number:</b> ${peopleSoftNumber}</p>
+                    <p><b>Email:</b> ${email}</p>
+                    <p><b>Timestamp:</b> ${new Date().toLocaleString()}</p>
+                </div>
+                <button onclick="window.location.href='/'">Back to Home</button>
             </body>
             </html>
         `);
