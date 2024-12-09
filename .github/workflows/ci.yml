@@ -39,14 +39,13 @@ jobs:
           context: ./
           file: ./Dockerfile
           push: true
-          tags: gcr.io/qrollin/my-image:latest
+          tags: us-central1-docker.pkg.dev/qrollin/qrolln-deploy/my-image:latest
           # Deploy to Google Cloud Run
           
       - name: Deploy to Cloud Run
         run: |
           gcloud run deploy qr-attendance-app \
-            --image gcr.io/qrollin/my-image:latest \
+            --image us-central1-docker.pkg.dev/qrollin/qrolln-deploy/my-image:latest \
             --region us-central1 \
             --platform managed \
             --allow-unauthenticated
-
