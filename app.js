@@ -15,6 +15,10 @@ const app = express();
 app.use(express.urlencoded({ extended: true })); // For form submissions
 app.use(express.json()); // For JSON requests
 
+app.get('/', (req, res) => {
+  res.redirect('/generate_teacher_qr');
+});
+
 // Initialize Pub/Sub 
 const pubSubClient = new PubSub({
     projectId: 'qrollin',
@@ -36,6 +40,7 @@ const convertToSchema = (data) => {
 
 // Start listening for messages
 listenForMessages();
+
 
 // Route for Teachers to Generate QR Code
 app.get('/generate_teacher_qr', (req, res) => {
