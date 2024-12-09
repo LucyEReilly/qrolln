@@ -14,12 +14,6 @@ jobs:
       # Checkout code
       - uses: actions/checkout@v4
 
-      # Debug Metadata (Optional)
-      - name: Debug Metadata
-        run: |
-          echo "Repository: ${{ github.repository }}"
-          echo "Branch/Ref: ${{ github.ref }}"
-
       # Authenticate to GCP with workload identity provider
       - uses: 'google-github-actions/auth@v2'
         id: auth
@@ -46,3 +40,13 @@ jobs:
           file: ./Dockerfile
           push: true
           tags: us-central1-docker.pkg.dev/qrollin/qrolln-deploy/my-image:latest
+          # Deploy to Google Cloud Run
+          
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy my-cloud-run-service \
+            --image us-central1-docker.pkg.dev/qrollin/qrolln-deploy/my-image:latest \
+            --region us-central1 \
+            --platform managed \
+            --allow-unauthenticated
+
