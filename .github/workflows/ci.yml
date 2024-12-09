@@ -44,7 +44,7 @@ jobs:
           
       - name: Deploy to Cloud Run
         run: |
-          gcloud run deploy my-cloud-run-service \
+          gcloud run deploy qr-attendance-app \
             --image us-central1-docker.pkg.dev/qrollin/qrolln-deploy/my-image:latest \
             --region us-central1 \
             --platform managed \
