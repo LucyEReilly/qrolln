@@ -14,6 +14,6 @@ Our final project took on the example of a QR code class attenedance mechanism. 
 
 
 
-## Archutecture
+## Architecture
 
 <img width="470" alt="image" src="https://github.com/user-attachments/assets/c5b83627-f300-446b-9f0c-f77f131cca9c">
