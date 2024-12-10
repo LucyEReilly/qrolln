@@ -15,8 +15,15 @@ Our final project took on the example of a QR code class attenedance mechanism. 
 
 
 ## Automation
-
-
+Streamlines the process of building, pushing, and preparing the application for deployment on Google Cloud.
+#### Authentication:
+Uses Workload Identity Federation to securely authenticate with GCP
+#### Docker Configuration:
+Configures a Docker file. Then builds and pushes the image
+#### Cloud Run Deployment:
+Prepares the container for deployment on Google Cloud Run
+#### Outcome
+A fully automated CI/CD pipeline that ensures the application is consistently built and ready for deployment
 
 ## Architecture
 
