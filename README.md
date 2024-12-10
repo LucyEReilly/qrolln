@@ -10,7 +10,19 @@ Our final project took on the example of a QR code class attenedance mechanism. 
 
 ## 3 GCP Services
 ### Firestore
+### Attendance Data Storage: 
+Stores student attendance records with a structured hierarchy of class ID and week number.
+### Real-Time Database:
+Ensures data is saved securely and can be retrieved quickly for reporting.
+### Seamless Integration:
+Works with the Node.js app to record attendance before triggering Pub/Sub for notifications.
 ### Cloud Run
+#### Hosting the App:
+Runs the Node.js application to handle QR code generation, form submissions, and attendance recording.
+#### Public Access: 
+Provides endpoints for teachers and students to access forms and generate QR codes.
+#### Scalability: 
+Automatically scales with user demand and reduces costs by scaling to zero when idle.
 ### Pub/Sub
 
 
