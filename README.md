@@ -24,7 +24,9 @@ Provides endpoints for teachers and students to access forms and generate QR cod
 #### Scalability: 
 Automatically scales with user demand and reduces costs by scaling to zero when idle.
 ### Pub/Sub
-
+#### Purpose
+Stores all submitted attendance messages in a centralized Pub/Sub topic.
+Provides students with confirmation that attendance has been successfully submitted.  
 
 
 ## Automation
