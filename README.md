@@ -5,7 +5,8 @@ Our final project took on the example of a QR code class attenedance mechanism. 
 
 ### Source Files
 - [Presentation](https://docs.google.com/presentation/d/1_PRAgUe_DOMUDW7prpTn9Iqwj6RE4P_EsosuSz-Z5WQ/edit?usp=sharing) <br>
-- [Github](https://github.com/LucyEReilly/qrolln)
+- [Github](https://github.com/LucyEReilly/qrolln) <br>
+- [Application](https://qr-attendance-app-111994251683.us-central1.run.app/generate_teacher_qr)
 
 ## 3 GCP Services
 ### Firestore
