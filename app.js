@@ -27,7 +27,7 @@ app.get('/', (req, res) => {
 // Initialize Pub/Sub 
 const pubSubClient = new PubSub({
     projectId: 'qrollin',
-    keyFilename: './serviceAccountKey.json',
+    credentials: JSON.parse(Buffer.from(process.env.SERVICE_ACCOUNT_KEY, 'base64').toString('utf8')),
 });
 const topicName = 'attendance-confirmation';
 
