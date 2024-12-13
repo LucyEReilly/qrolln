@@ -46,6 +46,7 @@ async function getServiceAccountKey() {
 
     console.log("Firebase initialized with credentials from Secret Manager!");
 })();
+const db = admin.firestore();
 
 // Initialize Pub/Sub client dynamically
 async function getPubSubClient() {
