@@ -11,13 +11,13 @@ const { listenForMessages } = require('./sendEmailFunction');
 // });
 // const db = admin.firestore();
 
-// const app = express();
-// app.use(express.urlencoded({ extended: true })); // For form submissions
-// app.use(express.json()); // For JSON requests
+const app = express();
+app.use(express.urlencoded({ extended: true })); // For form submissions
+app.use(express.json()); // For JSON requests
 
-// app.get('/', (req, res) => {
-//   res.redirect('/generate_teacher_qr');
-// });
+app.get('/', (req, res) => {
+  res.redirect('/generate_teacher_qr');
+});
 
 // // Initialize Pub/Sub 
 // const pubSubClient = new PubSub({
