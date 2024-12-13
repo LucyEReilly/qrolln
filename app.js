@@ -51,7 +51,7 @@ async function getServiceAccountKey() {
 async function getPubSubClient() {
     const client = new SecretManagerServiceClient();
     const [version] = await client.accessSecretVersion({
-        name: 'projects/<project-id>/secrets/SERVICE_ACCOUNT_KEY/versions/latest',
+        name: 'projects/qrollin/secrets/SERVICE_ACCOUNT_KEY/versions/latest',
     });
     const keyData = version.payload.data.toString('utf8');
     return new PubSub({
