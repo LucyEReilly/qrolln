@@ -4,6 +4,12 @@ const admin = require('firebase-admin');
 const { PubSub } = require('@google-cloud/pubsub');
 const { listenForMessages } = require('./sendEmailFunction');
 
+const PORT = process.env.PORT || 8080; // Default to 8080 if PORT is not set
+app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+});
+
+
 // Initialize Firestore
 // const serviceAccount = require('./serviceAccountKey.json');
 // admin.initializeApp({
