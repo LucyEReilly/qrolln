@@ -39,8 +39,9 @@ async function getServiceAccountKey() {
     });
 
     console.log("Firebase initialized with credentials from Secret Manager!");
+    global.db = admin.firestore();
 })();
-const db = admin.firestore();
+
 
 const app = express();
 app.use(express.urlencoded({ extended: true })); // For form submissions
