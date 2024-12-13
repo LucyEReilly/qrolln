@@ -60,7 +60,15 @@ async function getPubSubClient() {
     });
 }
 
-const pubSubClient = await getPubSubClient();
+// const pubSubClient = await getPubSubClient();
+
+async function initializePubSubClient() {
+    const pubSubClient = await getPubSubClient();
+    // Additional initialization code if needed
+}
+
+initializePubSubClient();
+
 
 
 
