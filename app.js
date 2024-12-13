@@ -4,8 +4,6 @@ const admin = require('firebase-admin');
 const { PubSub } = require('@google-cloud/pubsub');
 const { listenForMessages } = require('./sendEmailFunction');
 
-// Initialize Firestore
-const admin = require('firebase-admin');
 
 // Initialize Firebase Admin SDK using an environment variable
 admin.initializeApp({
