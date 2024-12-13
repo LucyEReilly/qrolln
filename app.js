@@ -5,26 +5,65 @@ const { PubSub } = require('@google-cloud/pubsub');
 const { listenForMessages } = require('./sendEmailFunction');
 
 // Initialize Firestore
-const serviceAccount = require('./serviceAccountKey.json');
-admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount),
-});
-const db = admin.firestore();
+// const serviceAccount = require('./serviceAccountKey.json');
+// admin.initializeApp({
+//     credential: admin.credential.cert(serviceAccount),
+// });
+// const db = admin.firestore();
 
-const app = express();
-app.use(express.urlencoded({ extended: true })); // For form submissions
-app.use(express.json()); // For JSON requests
+// const app = express();
+// app.use(express.urlencoded({ extended: true })); // For form submissions
+// app.use(express.json()); // For JSON requests
 
-app.get('/', (req, res) => {
-  res.redirect('/generate_teacher_qr');
-});
+// app.get('/', (req, res) => {
+//   res.redirect('/generate_teacher_qr');
+// });
 
-// Initialize Pub/Sub 
-const pubSubClient = new PubSub({
-    projectId: 'qrollin',
-    keyFilename: './serviceAccountKey.json',
-});
-const topicName = 'attendance-confirmation';
+// // Initialize Pub/Sub 
+// const pubSubClient = new PubSub({
+//     projectId: 'qrollin',
+//     keyFilename: './serviceAccountKey.json',
+// });
+// const topicName = 'attendance-confirmation';
+
+const { SecretManagerServiceClient } = require('@google-cloud/secret-manager');
+
+async function getServiceAccountKey() {
+    const client = new SecretManagerServiceClient();
+    const [version] = await client.accessSecretVersion({
+        name: 'projects/<project-id>/secrets/SERVICE_ACCOUNT_KEY/versions/latest',
+    });
+    const keyData = version.payload.data.toString('utf8');
+    return JSON.parse(keyData);
+}
+
+// Initialize Firebase Admin SDK dynamically
+(async () => {
+    const serviceAccount = await getServiceAccountKey();
+    admin.initializeApp({
+        credential: admin.credential.cert(serviceAccount),
+    });
+
+    console.log("Firebase initialized with credentials from Secret Manager!");
+})();
+
+// Initialize Pub/Sub client dynamically
+async function getPubSubClient() {
+    const client = new SecretManagerServiceClient();
+    const [version] = await client.accessSecretVersion({
+        name: 'projects/<project-id>/secrets/SERVICE_ACCOUNT_KEY/versions/latest',
+    });
+    const keyData = version.payload.data.toString('utf8');
+    return new PubSub({
+        projectId: 'qrollin',
+        credentials: JSON.parse(keyData),
+    });
+}
+
+const pubSubClient = await getPubSubClient();
+
+
+
 
 // Function to convert fields according to schema
 const convertToSchema = (data) => {
