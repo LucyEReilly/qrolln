@@ -2,40 +2,10 @@ const nodemailer = require('nodemailer');
 const { PubSub } = require('@google-cloud/pubsub');
 
 // Initialize Pub/Sub client
-// const pubSubClient = new PubSub({
-//     projectId: 'qrollin',
-//     keyFilename: './serviceAccountKey.json',
-// });
-
-const { SecretManagerServiceClient } = require('@google-cloud/secret-manager');
-
-async function getPubSubClient() {
-    const client = new SecretManagerServiceClient();
-    const [version] = await client.accessSecretVersion({
-        name: 'projects/qrollin/secrets/SERVICE_ACCOUNT_KEY/versions/latest',
-    });
-    const keyData = version.payload.data.toString('utf8');
-    return new PubSub({
-        projectId: 'qrollin',
-        credentials: JSON.parse(keyData),
-    });
-}
-
-// Initialize Pub/Sub client
-//const pubSubClient = await getPubSubClient();
-let pubSubClient;
-
-async function initializePubSubClient() {
-    pubSubClient = await getPubSubClient(); // Update the global variable
-    console.log('Pub/Sub client initialized');
-}
-
-initializePubSubClient().catch((error) => {
-    console.error('Error initializing Pub/Sub client:', error);
+const pubSubClient = new PubSub({
+    projectId: 'qrollin',
+    keyFilename: './serviceAccountKey.json',
 });
-
-
-
 const subscriptionName = 'attendance-confirmation-sub';
 
 // Configure email transporter
@@ -78,22 +48,8 @@ const sendEmail = async (message) => {
     }
 };
 
-// // Function to listen for Pub/Sub messages
-// exports.listenForMessages = () => {
-//     const subscription = pubSubClient.subscription(subscriptionName);
-
-//     subscription.on('message', sendEmail);
-//     subscription.on('error', (error) => {
-//         console.error('Subscription error:', error);
-//     });
-// };
-
+// Function to listen for Pub/Sub messages
 exports.listenForMessages = () => {
-    if (!pubSubClient) {
-        console.error('Pub/Sub client is not initialized.');
-        return;
-    }
-
     const subscription = pubSubClient.subscription(subscriptionName);
 
     subscription.on('message', sendEmail);
@@ -101,4 +57,3 @@ exports.listenForMessages = () => {
         console.error('Subscription error:', error);
     });
 };
-
