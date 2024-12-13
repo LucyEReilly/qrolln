@@ -29,7 +29,11 @@ async function initializePubSubClient() {
     // Additional initialization code if needed
 }
 
-initializePubSubClient();
+//initializePubSubClient();
+// Call initialization function at startup
+initializePubSubClient().catch((error) => {
+    console.error('Error initializing Pub/Sub client:', error);
+});
 
 
 const subscriptionName = 'attendance-confirmation-sub';
