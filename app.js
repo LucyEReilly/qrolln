@@ -30,7 +30,7 @@ async function getServiceAccountKey() {
     const keyData = version.payload.data.toString('utf8');
     return JSON.parse(keyData);
 }
-
+let db;
 // Initialize Firebase Admin SDK dynamically
 (async () => {
     const serviceAccount = await getServiceAccountKey();
@@ -39,7 +39,7 @@ async function getServiceAccountKey() {
     });
 
     console.log("Firebase initialized with credentials from Secret Manager!");
-    global.db = admin.firestore();
+    db = admin.firestore();
 })();
 
 
