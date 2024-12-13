@@ -67,7 +67,7 @@ async function getPubSubClient() {
 let pubSubClient;
 
 async function initializePubSubClient() {
-    const pubSubClient = await getPubSubClient();
+    pubSubClient = await getPubSubClient();
     // Additional initialization code if needed
 }
 
