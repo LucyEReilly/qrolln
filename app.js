@@ -5,43 +5,11 @@ const { PubSub } = require('@google-cloud/pubsub');
 const { listenForMessages } = require('./sendEmailFunction');
 
 // Initialize Firestore
-// const serviceAccount = require('./serviceAccountKey.json');
-// admin.initializeApp({
-//     credential: admin.credential.cert(serviceAccount),
-// });
-// const db = admin.firestore();
-
-
-
-// // Initialize Pub/Sub 
-// const pubSubClient = new PubSub({
-//     projectId: 'qrollin',
-//     keyFilename: './serviceAccountKey.json',
-// });
-// const topicName = 'attendance-confirmation';
-
-const { SecretManagerServiceClient } = require('@google-cloud/secret-manager');
-
-async function getServiceAccountKey() {
-    const client = new SecretManagerServiceClient();
-    const [version] = await client.accessSecretVersion({
-        name: 'projects/qrollin/secrets/SERVICE_ACCOUNT_KEY/versions/latest',
-    });
-    const keyData = version.payload.data.toString('utf8');
-    return JSON.parse(keyData);
-}
-let db;
-// Initialize Firebase Admin SDK dynamically
-(async () => {
-    const serviceAccount = await getServiceAccountKey();
-    admin.initializeApp({
-        credential: admin.credential.cert(serviceAccount),
-    });
-
-    console.log("Firebase initialized with credentials from Secret Manager!");
-    db = admin.firestore();
-})();
-
+const serviceAccount = require('./serviceAccountKey.json');
+admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount),
+});
+const db = admin.firestore();
 
 const app = express();
 app.use(express.urlencoded({ extended: true })); // For form submissions
@@ -51,34 +19,11 @@ app.get('/', (req, res) => {
   res.redirect('/generate_teacher_qr');
 });
 
-// Initialize Pub/Sub client dynamically
-async function getPubSubClient() {
-    const client = new SecretManagerServiceClient();
-    const [version] = await client.accessSecretVersion({
-        name: 'projects/qrollin/secrets/SERVICE_ACCOUNT_KEY/versions/latest',
-    });
-    const keyData = version.payload.data.toString('utf8');
-    return new PubSub({
-        projectId: 'qrollin',
-        credentials: JSON.parse(keyData),
-    });
-}
-
-// const pubSubClient = await getPubSubClient();
-let pubSubClient;
-
-async function initializePubSubClient() {
-    pubSubClient = await getPubSubClient();
-    // Additional initialization code if needed
-}
-
-//initializePubSubClient();
-
-// Call initialization function at startup
-initializePubSubClient().catch((error) => {
-    console.error('Error initializing Pub/Sub client:', error);
+// Initialize Pub/Sub 
+const pubSubClient = new PubSub({
+    projectId: 'qrollin',
+    keyFilename: './serviceAccountKey.json',
 });
-
 const topicName = 'attendance-confirmation';
 
 // Function to convert fields according to schema
