@@ -24,16 +24,16 @@ async function getPubSubClient() {
 // Initialize Pub/Sub client
 //const pubSubClient = await getPubSubClient();
 let pubSubClient;
+
 async function initializePubSubClient() {
-    const pubSubClient = await getPubSubClient();
-    // Additional initialization code if needed
+    pubSubClient = await getPubSubClient(); // Update the global variable
+    console.log('Pub/Sub client initialized');
 }
 
-//initializePubSubClient();
-// Call initialization function at startup
 initializePubSubClient().catch((error) => {
     console.error('Error initializing Pub/Sub client:', error);
 });
+
 
 
 const subscriptionName = 'attendance-confirmation-sub';
@@ -78,8 +78,22 @@ const sendEmail = async (message) => {
     }
 };
 
-// Function to listen for Pub/Sub messages
+// // Function to listen for Pub/Sub messages
+// exports.listenForMessages = () => {
+//     const subscription = pubSubClient.subscription(subscriptionName);
+
+//     subscription.on('message', sendEmail);
+//     subscription.on('error', (error) => {
+//         console.error('Subscription error:', error);
+//     });
+// };
+
 exports.listenForMessages = () => {
+    if (!pubSubClient) {
+        console.error('Pub/Sub client is not initialized.');
+        return;
+    }
+
     const subscription = pubSubClient.subscription(subscriptionName);
 
     subscription.on('message', sendEmail);
@@ -87,3 +101,4 @@ exports.listenForMessages = () => {
         console.error('Subscription error:', error);
     });
 };
+
