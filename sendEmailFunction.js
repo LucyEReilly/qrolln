@@ -4,7 +4,7 @@ const { PubSub } = require('@google-cloud/pubsub');
 // Initialize Pub/Sub client
 const pubSubClient = new PubSub({
     projectId: 'qrollin',
-    keyFilename: './serviceAccountKey.json',
+    credentials: JSON.parse(Buffer.from(process.env.SERVICE_ACCOUNT_KEY, 'base64').toString('utf8')),
 });
 const subscriptionName = 'attendance-confirmation-sub';
 
