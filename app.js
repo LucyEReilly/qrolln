@@ -5,11 +5,16 @@ const { PubSub } = require('@google-cloud/pubsub');
 const { listenForMessages } = require('./sendEmailFunction');
 
 // Initialize Firestore
-const serviceAccount = require('./serviceAccountKey.json');
+const admin = require('firebase-admin');
+
+// Initialize Firebase Admin SDK using an environment variable
 admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount),
+    credential: admin.credential.cert(
+        JSON.parse(Buffer.from(process.env.SERVICE_ACCOUNT_KEY, 'base64').toString('utf8'))
+    ),
 });
 const db = admin.firestore();
+
 
 const app = express();
 app.use(express.urlencoded({ extended: true })); // For form submissions
