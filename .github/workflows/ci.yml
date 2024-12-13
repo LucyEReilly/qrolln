@@ -32,6 +32,13 @@ jobs:
         with:
           platforms: linux/amd64,linux/arm64
 
+      # Add Service Account Key as File
+      - name: Add Service Account Key
+        env:
+          SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+        run: |
+          echo "$SERVICE_ACCOUNT_KEY" | base64 --decode > serviceAccountKey.json
+
       # Build and Push Docker Image
       - name: Build and Push
         uses: docker/build-push-action@v6
@@ -49,3 +56,8 @@ jobs:
             --region us-central1 \
             --platform managed \
             --allow-unauthenticated
+            --set-env-vars GOOGLE_APPLICATION_CREDENTIALS=/github/workspace/serviceAccountKey.json
+
+      # Clean Up Service Account Key
+      - name: Clean Up
+        run: rm -f serviceAccountKey.json
