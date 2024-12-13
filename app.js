@@ -4,12 +4,6 @@ const admin = require('firebase-admin');
 const { PubSub } = require('@google-cloud/pubsub');
 const { listenForMessages } = require('./sendEmailFunction');
 
-const PORT = process.env.PORT || 8080; // Default to 8080 if PORT is not set
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
-});
-
-
 // Initialize Firestore
 // const serviceAccount = require('./serviceAccountKey.json');
 // admin.initializeApp({
@@ -37,7 +31,7 @@ const { SecretManagerServiceClient } = require('@google-cloud/secret-manager');
 async function getServiceAccountKey() {
     const client = new SecretManagerServiceClient();
     const [version] = await client.accessSecretVersion({
-        name: 'projects/<project-id>/secrets/SERVICE_ACCOUNT_KEY/versions/latest',
+        name: 'projects/qrollin/secrets/SERVICE_ACCOUNT_KEY/versions/latest',
     });
     const keyData = version.payload.data.toString('utf8');
     return JSON.parse(keyData);
@@ -67,6 +61,7 @@ async function getPubSubClient() {
 }
 
 // const pubSubClient = await getPubSubClient();
+let pubSubClient;
 
 async function initializePubSubClient() {
     const pubSubClient = await getPubSubClient();
