@@ -11,13 +11,13 @@ const { listenForMessages } = require('./sendEmailFunction');
 // });
 // const db = admin.firestore();
 
-const app = express();
-app.use(express.urlencoded({ extended: true })); // For form submissions
-app.use(express.json()); // For JSON requests
+// const app = express();
+// app.use(express.urlencoded({ extended: true })); // For form submissions
+// app.use(express.json()); // For JSON requests
 
-app.get('/', (req, res) => {
-  res.redirect('/generate_teacher_qr');
-});
+// app.get('/', (req, res) => {
+//   res.redirect('/generate_teacher_qr');
+// });
 
 // // Initialize Pub/Sub 
 // const pubSubClient = new PubSub({
@@ -46,6 +46,16 @@ async function getServiceAccountKey() {
 
     console.log("Firebase initialized with credentials from Secret Manager!");
 })();
+
+const db = admin.firestore();
+
+const app = express();
+app.use(express.urlencoded({ extended: true })); // For form submissions
+app.use(express.json()); // For JSON requests
+
+app.get('/', (req, res) => {
+  res.redirect('/generate_teacher_qr');
+});
 
 // Initialize Pub/Sub client dynamically
 async function getPubSubClient() {
@@ -88,6 +98,8 @@ const convertToSchema = (data) => {
         timestamp: data.timestamp || new Date().toISOString(),
         message: `Attendance for ${data.name} in Week ${data.weekNumber} of Class ${data.classID} has been confirmed.`    };
 }
+
+const topicName = 'attendance-confirmation';
 
 // Start listening for messages
 listenForMessages();
