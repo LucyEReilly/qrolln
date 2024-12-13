@@ -11,13 +11,7 @@ const { listenForMessages } = require('./sendEmailFunction');
 // });
 // const db = admin.firestore();
 
-const app = express();
-app.use(express.urlencoded({ extended: true })); // For form submissions
-app.use(express.json()); // For JSON requests
 
-app.get('/', (req, res) => {
-  res.redirect('/generate_teacher_qr');
-});
 
 // // Initialize Pub/Sub 
 // const pubSubClient = new PubSub({
@@ -48,6 +42,14 @@ async function getServiceAccountKey() {
 })();
 const db = admin.firestore();
 
+const app = express();
+app.use(express.urlencoded({ extended: true })); // For form submissions
+app.use(express.json()); // For JSON requests
+
+app.get('/', (req, res) => {
+  res.redirect('/generate_teacher_qr');
+});
+
 // Initialize Pub/Sub client dynamically
 async function getPubSubClient() {
     const client = new SecretManagerServiceClient();
@@ -76,7 +78,7 @@ initializePubSubClient().catch((error) => {
     console.error('Error initializing Pub/Sub client:', error);
 });
 
-
+const topicName = 'attendance-confirmation';
 
 // Function to convert fields according to schema
 const convertToSchema = (data) => {
