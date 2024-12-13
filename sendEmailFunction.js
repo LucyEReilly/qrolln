@@ -12,7 +12,7 @@ const { SecretManagerServiceClient } = require('@google-cloud/secret-manager');
 async function getPubSubClient() {
     const client = new SecretManagerServiceClient();
     const [version] = await client.accessSecretVersion({
-        name: 'projects/<project-id>/secrets/SERVICE_ACCOUNT_KEY/versions/latest',
+        name: 'projects/qrollin/secrets/SERVICE_ACCOUNT_KEY/versions/latest',
     });
     const keyData = version.payload.data.toString('utf8');
     return new PubSub({
@@ -23,7 +23,7 @@ async function getPubSubClient() {
 
 // Initialize Pub/Sub client
 //const pubSubClient = await getPubSubClient();
-
+let pubSubClient;
 async function initializePubSubClient() {
     const pubSubClient = await getPubSubClient();
     // Additional initialization code if needed
